@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#262624" id="meta-theme">
+<title>거만어 Quiz — 송종옥 GRE Verbal</title>
+<meta name="description" content="송종옥 선생님의 거만어 3,000단어 학습 앱 — 플래시카드·퀴즈·오답노트·복습">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&display=swap">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ═══ App Shell ═══ -->
+<div id="app">
+
+  <!-- 상단 헤더 -->
+  <header class="app-header">
+    <div class="brand" onclick="go('home')">
+      <div class="logo">거</div>
+      <div class="brand-text">
+        <h1>거만어 Quiz</h1>
+        <p>송종옥 GRE Verbal · 3,000 words</p>
+      </div>
+    </div>
+    <nav class="top-nav">
+      <button class="nav-btn active" data-view="home" onclick="go('home')">홈</button>
+      <button class="nav-btn" data-view="browse" onclick="go('browse')">단어장</button>
+      <button class="nav-btn" data-view="wrong" onclick="go('wrong')">오답노트</button>
+      <button class="nav-btn" data-view="stats" onclick="go('stats')">통계</button>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="테마 전환">◐</button>
+    </div>
+  </header>
+
+  <!-- ═══ 홈 (설정·시작) ═══ -->
+  <main class="view" id="view-home">
+    <section class="hero-banner">
+      <div class="hb-glow"></div>
+      <div class="hb-kicker">GRE 버벌 최강자 송종옥 선생님이 제공하는</div>
+      <h2 class="hb-title">거만어 퀴즈<span class="hb-amp">와</span>플래시카드</h2>
+      <p class="hb-sub" id="hero-sub">3,000단어 · Day 1–30 · 발음과 함께</p>
+      <div class="hero-badges" id="hero-badges"></div>
+    </section>
+
+    <!-- 오늘의 복습 배너 -->
+    <section class="review-banner" id="review-banner" style="display:none">
+      <div class="rb-info">
+        <div class="rb-title">🔔 오늘의 복습</div>
+        <div class="rb-sub"><strong id="rb-count">0</strong>개 단어가 복습을 기다려요</div>
+      </div>
+      <button class="btn btn-accent" onclick="startReview()">복습 시작</button>
+    </section>
+
+    <!-- 범위 선택 -->
+    <section class="panel">
+      <div class="panel-title">학습 범위 <span class="panel-hint" id="range-summary"></span></div>
+      <div class="preset-row">
+        <button class="chip preset" onclick="setPreset('all')">전체</button>
+        <button class="chip preset" onclick="setPreset('1-10')">Day 1–10</button>
+        <button class="chip preset" onclick="setPreset('11-20')">Day 11–20</button>
+        <button class="chip preset" onclick="setPreset('21-30')">Day 21–30</button>
+        <button class="chip preset" onclick="setPreset('none')">지우기</button>
+      </div>
+      <div class="day-grid" id="day-grid"></div>
+    </section>
+
+    <!-- 모드 선택 -->
+    <section class="panel">
+      <div class="panel-title">학습 모드</div>
+      <div class="mode-grid">
+        <button class="mode-card" onclick="startSession('flash')">
+          <span class="mc-emoji">🃏</span>
+          <span class="mc-name">플래시카드</span>
+          <span class="mc-desc">발음 듣고 뜻 확인</span>
+        </button>
+        <button class="mode-card" onclick="startSession('quiz')">
+          <span class="mc-emoji">📝</span>
+          <span class="mc-name">주관식 퀴즈</span>
+          <span class="mc-desc">뜻 쓰기 + 시험지 출력</span>
+        </button>
+        <button class="mode-card" onclick="startSession('mcq')">
+          <span class="mc-emoji">🎯</span>
+          <span class="mc-name">객관식</span>
+          <span class="mc-desc">4지선다 스피드</span>
+        </button>
+        <button class="mode-card" onclick="startSession('spell')">
+          <span class="mc-emoji">⌨️</span>
+          <span class="mc-name">스펠링</span>
+          <span class="mc-desc">뜻 보고 단어 쓰기</span>
+        </button>
+      </div>
+      <div class="option-row">
+        <div class="opt">
+          <label>문제 수</label>
+          <select id="count-sel">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="0">전체</option>
+          </select>
+        </div>
+        <div class="opt">
+          <label>객관식 방향</label>
+          <select id="dir-sel">
+            <option value="e2k" selected>영어 → 한글</option>
+            <option value="k2e">한글 → 영어</option>
+          </select>
+        </div>
+        <div class="opt opt-toggle">
+          <label>오답만</label>
+          <button class="toggle" id="wrong-only" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="opt opt-toggle">
+          <label>자동 발음</label>
+          <button class="toggle on" id="auto-speak" onclick="toggleAutoSpeak(this)"></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══ 단어장 (Browse) ═══ -->
+  <main class="view" id="view-browse" style="display:none">
+    <section class="panel">
+      <div class="browse-head">
+        <input type="search" class="search-input" id="search-input" placeholder="영단어·한글 뜻 검색…" oninput="renderBrowse()">
+        <select id="browse-day" onchange="renderBrowse()"></select>
+        <button class="chip" id="star-filter" onclick="this.classList.toggle('on');renderBrowse()">★ 별표만</button>
+      </div>
+      <div class="browse-count" id="browse-count"></div>
+      <div class="word-list" id="word-list"></div>
+      <button class="btn btn-ghost" id="browse-more" onclick="browseMore()" style="display:none">더 보기</button>
+    </section>
+  </main>
+
+  <!-- ═══ 오답노트 ═══ -->
+  <main class="view" id="view-wrong" style="display:none">
+    <section class="panel">
+      <div class="panel-title">오답노트 <span class="panel-hint" id="wrong-summary"></span></div>
+      <p class="panel-desc">틀린 단어가 자동으로 모입니다. 복습에서 연속으로 맞히면 자동 졸업해요.</p>
+      <div class="preset-row" id="wrong-actions">
+        <button class="btn btn-accent" onclick="startWrongSession('flash')">🃏 카드로 복습</button>
+        <button class="btn btn-accent" onclick="startWrongSession('mcq')">🎯 객관식으로</button>
+        <button class="btn btn-accent" onclick="startWrongSession('quiz')">📝 주관식으로</button>
+      </div>
+      <div class="word-list" id="wrong-list"></div>
+    </section>
+  </main>
+
+  <!-- ═══ 통계 ═══ -->
+  <main class="view" id="view-stats" style="display:none">
+    <section class="panel">
+      <div class="stats-top" id="stats-top"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-title">학습 히트맵 <span class="panel-hint">최근 12주</span></div>
+      <div class="heatmap-wrap"><div class="heatmap" id="heatmap"></div></div>
+    </section>
+    <section class="panel">
+      <div class="panel-title">Day별 진도</div>
+      <div class="day-progress" id="day-progress"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-title">최근 세션</div>
+      <div class="session-list" id="session-list"></div>
+      <div class="backup-row">
+        <button class="btn btn-ghost" onclick="exportData()">⬇ 학습 데이터 내보내기</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">⬆ 가져오기</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══ 학습 세션 (전체 화면) ═══ -->
+  <main class="view session-view" id="view-session" style="display:none">
+    <div class="session-bar">
+      <button class="icon-btn" onclick="confirmExit()">✕</button>
+      <div class="session-progress"><div class="sp-fill" id="sp-fill"></div></div>
+      <div class="session-count" id="session-count">1/20</div>
+    </div>
+    <div id="session-body"></div>
+  </main>
+
+  <!-- 단어 상세 모달 -->
+  <div class="modal-scrim" id="modal-scrim" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="word-modal"></div>
+  </div>
+
+  <!-- 토스트 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 하단 탭 (모바일) -->
+  <nav class="tab-bar" id="tab-bar">
+    <button class="tab active" data-view="home" onclick="go('home')"><span class="tab-ico">⌂</span>홈</button>
+    <button class="tab" data-view="browse" onclick="go('browse')"><span class="tab-ico">📖</span>단어장</button>
+    <button class="tab" data-view="wrong" onclick="go('wrong')"><span class="tab-ico">✍️</span>오답</button>
+    <button class="tab" data-view="stats" onclick="go('stats')"><span class="tab-ico">📊</span>통계</button>
+  </nav>
+</div>
+
+<!-- 인쇄 전용 영역 (주관식 시험지) -->
+<div id="print-root"></div>
+
+<script src="js/vocab-data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
