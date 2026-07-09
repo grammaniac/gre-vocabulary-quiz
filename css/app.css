@@ -166,6 +166,8 @@ input, select { font-family: inherit; }
   padding: 7px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--text2);
 }
 .badge strong { color: var(--accent2); }
+.badge-btn { cursor: pointer; transition: all 0.15s; }
+.badge-btn:hover { border-color: rgba(255, 255, 255, 0.55); background: rgba(255, 255, 255, 0.22); }
 
 /* ── 복습 배너 ── */
 .review-banner {
@@ -267,7 +269,20 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 .session-count { font-size: 13px; font-weight: 700; color: var(--text2); min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
 
 /* ── 플래시카드 ── */
-.flash-stage { perspective: 1200px; margin-bottom: 18px; }
+.flash-stage { perspective: 1200px; margin-bottom: 18px; position: relative; }
+.fc-star {
+  position: absolute; top: 14px; right: 14px; z-index: 5;
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface2);
+  font-size: 22px; color: var(--text3); transition: all 0.18s;
+  display: grid; place-items: center;
+}
+.fc-star:hover { border-color: var(--yellow); color: var(--yellow); }
+.fc-star.on {
+  background: rgba(217, 164, 91, 0.15); border-color: var(--yellow);
+  color: var(--yellow); box-shadow: 0 0 14px rgba(217, 164, 91, 0.3);
+}
+.fc-star:active { transform: scale(0.9); }
 .flash-card {
   position: relative; width: 100%; min-height: 380px;
   transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.25, 1);

@@ -241,7 +241,7 @@ function renderHome() {
   $("hero-badges").innerHTML =
     `<span class="badge">🔥 연속 <strong>${stk}</strong>일</span>` +
     `<span class="badge">오늘 <strong>${todayN}</strong>문제</span>` +
-    `<span class="badge">⭐ <strong>${STARS.size}</strong></span>`;
+    `<button class="badge badge-btn" onclick="openStarList()" title="내 단어장 보기">⭐ 내 단어장 <strong>${STARS.size}</strong></button>`;
   // 복습 배너
   const due = duePool();
   $("review-banner").style.display = due.length ? "flex" : "none";
@@ -266,18 +266,22 @@ const session = {
 
 function buildPool() {
   const wrongOnly = $("wrong-only").classList.contains("on");
+  const starOnly = $("star-only").classList.contains("on");
   let pool = VOCAB.filter((w) => selDays.has(w.ch));
   if (wrongOnly) {
     const wset = new Set(wrongPool().map((w) => w.cn));
     pool = pool.filter((w) => wset.has(w.cn));
   }
+  if (starOnly) pool = pool.filter((w) => STARS.has(w.cn));
   return pool;
 }
 
 function startSession(mode, fixedPool, label) {
   const pool = fixedPool || buildPool();
   if (!pool.length) {
-    toast(fixedPool ? "해당 단어가 없어요" : "선택한 범위에 단어가 없어요. Day를 선택해 주세요.");
+    toast(fixedPool ? "해당 단어가 없어요"
+      : !fixedPool && $("star-only").classList.contains("on") ? "선택한 Day에 별표 단어가 없어요. 플래시카드에서 ★를 눌러 저장해 보세요."
+      : "선택한 범위에 단어가 없어요. Day를 선택해 주세요.");
     return;
   }
   const cnt = fixedPool ? pool.length : Number($("count-sel").value) || pool.length;
@@ -333,6 +337,8 @@ function renderStep() {
 function renderFlash(w) {
   $("session-body").innerHTML = `
     <div class="flash-stage">
+      <button class="fc-star ${STARS.has(w.cn) ? "on" : ""}" id="fc-star-btn" title="내 단어장에 저장"
+        onclick="flashStar(${w.cn}, this)">★</button>
       <div class="flash-card" id="flash-card" onclick="flipFlash()">
         <div class="fc-face front">
           <div class="fc-label">영단어</div>
@@ -357,11 +363,15 @@ function renderFlash(w) {
     <div class="fc-nav-row">
       <span><span class="kbd">Space</span> 뒤집기</span>
       <span><span class="kbd">1</span> 몰라요 · <span class="kbd">2</span> 알아요</span>
-      <span><span class="kbd">P</span> 발음</span>
+      <span><span class="kbd">P</span> 발음 · <span class="kbd">S</span> ★저장</span>
     </div>`;
   if (SETTINGS.autoSpeak) setTimeout(() => tts.speak(w.word), 250);
 }
 function flipFlash() { $("flash-card")?.classList.toggle("flipped"); }
+function flashStar(cn, btn) {
+  toggleStar(cn, btn);
+  toast(STARS.has(cn) ? "⭐ 내 단어장에 저장했어요" : "내 단어장에서 뺐어요");
+}
 function flashAnswer(known) {
   const w = session.words[session.idx];
   record(w.cn, known);
@@ -801,6 +811,13 @@ function drawBrowse() {
   $("browse-more").style.display = list.length > browseLimit ? "" : "none";
 }
 function browseMore() { browseLimit += 200; drawBrowse(); }
+function openStarList() {
+  go("browse");
+  $("star-filter").classList.add("on");
+  $("browse-day").value = "0";
+  $("search-input").value = "";
+  renderBrowse();
+}
 function toggleStar(cn, btn) {
   if (STARS.has(cn)) STARS.delete(cn); else STARS.add(cn);
   btn?.classList.toggle("on", STARS.has(cn));
@@ -954,6 +971,10 @@ document.addEventListener("keydown", (e) => {
     else if (e.key === "1") flashAnswer(false);
     else if (e.key === "2") flashAnswer(true);
     else if (e.key === "p" || e.key === "P") tts.speak(session.words[session.idx]?.word || "");
+    else if (e.key === "s" || e.key === "S") {
+      const w = session.words[session.idx];
+      if (w) flashStar(w.cn, $("fc-star-btn"));
+    }
     else if (e.key === "ArrowRight") flashAnswer(true);
     else if (e.key === "ArrowLeft") flashAnswer(false);
   } else if (session.mode === "mcq" && !session._mcqDone) {

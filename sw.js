@@ -2,7 +2,7 @@
    전략: 앱 셸은 캐시 우선 + 백그라운드 갱신(stale-while-revalidate).
    배포 시 CACHE_VERSION을 올리면 이전 캐시가 정리된다. */
 
-const CACHE_VERSION = "gv-v3";
+const CACHE_VERSION = "gv-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
