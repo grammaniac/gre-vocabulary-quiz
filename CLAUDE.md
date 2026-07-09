@@ -30,7 +30,8 @@ scripts/legacy_vocab.json ← 구버전 VOCAB 보존본 (한글 뜻 = 채점 기
    표제어·발음기호·한글뜻(`word`/`ipa`/`meaning`)까지만 담는다. Vault 원문의
    영어 정의·예문·동의어·어원은 이해관계 문제로 **절대 웹에 노출하지 않는다.**
    build_data.py가 이를 강제하며, 데이터 재생성 후 필드 화이트리스트를 확인할 것.
-5. `sw.js`의 `CACHE_VERSION`은 **배포마다 올린다** (안 올리면 학생 기기에 구버전이 남는다).
+5. 배포마다 **`sw.js`의 `CACHE_VERSION`과 `index.html`의 자산 버전 쿼리(`?v=N`) 둘 다 올린다.**
+   (페이지는 네트워크 우선이라 새 index가 즉시 배포되고, index가 새 ?v=로 새 자산을 가리킨다.)
 6. 학습 기록은 localStorage(`gv.*`) — 서버 없음, 코드에서 개인정보 수집 금지.
 7. 배포: main push → GitHub Pages 자동 반영. 학생 공유는 프로덕션 URL로.
 
