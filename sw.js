@@ -5,7 +5,7 @@
    - install은 HTTP 캐시를 우회(reload)해 항상 원본에서 받는다
    배포 시 CACHE_VERSION과 index.html의 자산 ?v= 를 함께 올린다. */
 
-const CACHE_VERSION = "gv-v5";
+const CACHE_VERSION = "gv-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
