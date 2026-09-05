@@ -87,6 +87,9 @@ function logSession(mode, rangeLabel, n, ok) {
 
 /* ── 2. 데이터 인덱스 ── */
 const BY_CN = new Map(VOCAB.map((w) => [w.cn, w]));
+const KNOWN_KO_TERMS = new Set(
+  VOCAB.flatMap((w) => KoGrader.parseMeaningUnits(w.meaning))
+);
 const BY_DAY = {};
 VOCAB.forEach((w) => { (BY_DAY[w.ch] = BY_DAY[w.ch] || []).push(w); });
 const ALL_DAYS = Object.keys(BY_DAY).map(Number).sort((a, b) => a - b);
@@ -290,6 +293,9 @@ function startSession(mode, fixedPool, label) {
   session.words = shuffle(pool).slice(0, cnt || pool.length);
   session.idx = 0;
   session.results = [];
+  session._graded = false;
+  session._mcqDone = false;
+  session._spellDone = false;
   session.label = label || rangeLabel();
   session.isReview = !!fixedPool;
   ["home", "browse", "wrong", "stats"].forEach((v) => $("view-" + v).style.display = "none");
@@ -501,9 +507,18 @@ function gradeQuizTable() {
   session._graded = true;
   $("grade-btn").disabled = true;
   let correct = 0;
+  const methodLabels = {
+    variant: "표현 차이 ✓",
+    synonym: "유의어 ✓",
+    typo: "오타 인정 ✓",
+  };
   session.words.forEach((w, i) => {
     const input = $("qt-" + i);
-    const { match, method } = checkAnswer(input.value || "", w.meaning);
+    const { match, method } = KoGrader.checkAnswer(
+      input.value || "",
+      w.meaning,
+      { cn: w.cn, knownTerms: KNOWN_KO_TERMS }
+    );
     input.disabled = true;
     input.classList.add(match ? "correct" : "wrong");
     if (match) correct++;
@@ -513,7 +528,7 @@ function gradeQuizTable() {
     rv.style.display = "";
     rv.innerHTML =
       `<span class="rv-tag ${match ? "ok" : "no"}">${match ? "✓" : "✗"}</span>` +
-      (method === "synonym" ? `<span class="rv-tag syn">유의어 ✓</span>` : "") +
+      (methodLabels[method] ? `<span class="rv-tag ${method === "synonym" ? "syn" : method}">${methodLabels[method]}</span>` : "") +
       `<span class="rv-meaning">${w.meaning}</span>`;
   });
   commitRecords();
@@ -597,130 +612,7 @@ function restartSession() {
   startSession(session.mode);
 }
 
-/* ── 8. 채점 엔진 (구버전 검증 로직 그대로 이식) ── */
-function normalizeKo(str) {
-  return str
-    .replace(/[()（）\[\]]/g, " ")
-    .replace(/\s+/g, "")
-    .replace(/(하다|하고|하여|해서|했다|하는|하게|함|할|해)$/g, "하")
-    .replace(/(시키다|시키고|시켜서|시켰다|시키는|시킴)$/g, "시키")
-    .replace(/(되다|되고|되어|돼서|됐다|되는|됨)$/g, "되")
-    .replace(/(이다|이고|이어|였다|인)$/g, "")
-    .replace(/(스럽다|스러운|스러워|스럽게)$/g, "스럽")
-    .replace(/(롭다|로운|로워|롭게)$/g, "롭")
-    .replace(/(적이다|적인|적으로)$/g, "적")
-    .replace(/다$/g, "");
-}
-
-const SYN_GROUPS = [
-  ["버리다","포기하다","폐기하다","방기하다","유기하다","저버리다","내팽개치다","내버리다","투기하다","기권하다","철회하다","단념하다","断念"],
-  ["줄이다","감소시키다","축소하다","완화하다","경감하다","약화시키다","줄어들다","감소하다","약해지다","수그러들다","낮추다","완화되다","누그러뜨리다","경미하게하다"],
-  ["혐오하다","증오하다","싫어하다","미워하다","혐오","증오","경멸하다","역겨워하다","질색하다","기피하다"],
-  ["개선하다","향상시키다","나아지다","좋아지다","개량하다","개혁하다","호전시키다","발전시키다","증진하다"],
-  ["비난하다","비판하다","책망하다","꾸짖다","질책하다","나무라다","힐난하다","비판","비난","지탄하다","맹비난하다","성토하다","규탄하다"],
-  ["칭찬하다","찬양하다","극찬하다","칭송하다","찬미하다","기리다","추앙하다","격찬하다","찬사","치켜세우다"],
-  ["진정시키다","달래다","가라앉히다","완화시키다","누그러뜨리다","무마하다","어르다","위무하다"],
-  ["요약하다","줄이다","축약하다","간추리다","단축하다","압축하다","요약","간략화하다"],
-  ["폐지하다","철폐하다","폐기하다","없애다","무효화하다","취소하다","폐지","철폐","반파하다","파기하다"],
-  ["따르다","순종하다","복종하다","따름","순응하다","따르는","고분고분하다","말을잘듣다","유순하다","온순하다"],
-  ["강등시키다","낮추다","격하하다","떨어뜨리다","낮추기","품위를낮추다","하락시키다","비하하다"],
-  ["당황하게하다","당황시키다","무안하게하다","창피주다","부끄럽게하다","난처하게하다","민망하게하다"],
-  ["포기하다","버리다","양보하다","넘겨주다","내주다","이양하다","반납하다","사임하다","사퇴하다"],
-  ["일탈적인","정도를벗어난","비정상적인","이상한","특이한","별난","기이한","이상","변이"],
-  ["부추기다","자극하다","선동하다","충동질하다","고무하다","독려하다","촉구하다","조장하다"],
-  ["중지","중단","정지","휴지","멈춤","보류","유예","중지상태"],
-  ["면죄하다","면제하다","용서하다","사면하다","방면하다","석방하다","해방하다"],
-  ["마모시키다","닳게하다","닳다","갈다","마찰하다","벗겨지다","마모"],
-  ["뒤떨어지지않다","발맞추다","나란히하다","따라가다","동보하다","보조를맞추다"],
-  ["제한하다","축소하다","줄이다","감축하다","억제하다","제약하다","한정하다"],
-  ["철폐하다","공식폐지하다","폐지하다","공식적으로폐지하다","없애다","무효화"],
-  ["비굴한","비굴하다","비천한","천박한","굴욕적인","굴종하는","비열한"],
-  ["비참한","절망적인","처참한","참담한","처절한","비참","참혹한"],
-  ["주변의","주위의","환경의","분위기의","둘러싼","주변환경의"],
-  ["애매한","모호한","불분명한","불명확한","뚜렷하지않은","다의적인","여러뜻의","중의적인"],
-  ["상반된","양면적인","이중적인","상충하는","모순된","갈등하는","상반","양가적인"],
-  ["개선하다","나아지게하다","좋게만들다","호전시키다","향상하다","개량하다"],
-  ["순종적인","고분고분한","말잘듣는","유순한","온순한","복종하는","따르는"],
-  ["개정하다","수정하다","고치다","바로잡다","교정하다","손보다","수정안"],
-  ["편의시설","편의","쾌적함","안락함","시설","쾌적","예의","편리"],
-  ["친근한","상냥한","다정한","친절한","온화한","붙임성있는","친화적인"],
-  ["우호적인","원만한","사이좋은","화목한","친선","우호","평화로운"],
-  ["불명확한","형태없는","모양없는","불분명한","흐릿한","뚜렷하지않은","막연한","형태가없는"],
-  ["시대착오적인","연대기오류","시기에맞지않는","시대에뒤떨어진","구시대적"],
-  ["유사한","비슷한","닮은","유사","흡사한","동일한","같은","상응하는"],
-  ["혐오스러운","저주","파문","금기","금기시","불쾌한","역겨운"],
-  ["해부하다","분석하다","철저히조사하다","면밀히검토하다","분해하다"],
-  ["부속의","보조의","부수적인","종속적인","보완적인","부차적인","보조적"],
-  ["은둔하다","고립하다","격리하다","숨다","칩거하다","틀어박히다"],
-  ["강화하다","굳히다","확고히하다","굳건히하다","단단히하다","강고히하다"],
-  ["확인하다","증명하다","입증하다","검증하다","확증하다","증거를대다","뒷받침하다"],
-  ["반박하다","반론하다","논박하다","반증하다","부인하다","반대하다","이의를제기하다"],
-  ["회의적인","의심하는","의구심","의혹","회의","불신하는","믿지않는"],
-  ["경향","성향","편향","기울다","쏠리다","치우치다","경향이있다"],
-  ["영향","충격","타격","영향을미치다","여파","결과"],
-  ["진부한","평범한","낡은","식상한","평이한","새롭지않은","진부"],
-  ["공격적인","적대적인","호전적인","싸움을좋아하는","전투적인","도전적인"],
-  ["겸손한","겸허한","겸양하는","자신을낮추는","겸손","소박한"],
-  ["교만한","오만한","거만한","자만하는","뻔뻔한","자고하는","건방진"],
-  ["열정적인","열심인","열렬한","적극적인","열의있는","의욕적인","열정"],
-  ["신중한","조심스러운","주의깊은","사려깊은","조심하는","조심성있는","삼가는"],
-  ["독특한","특이한","고유한","특별한","남다른","특유의","독창적인"],
-  ["지지하다","옹호하다","지원하다","후원하다","지지","찬성하다","지원","뒷받침하다"],
-  ["반대하다","저항하다","거부하다","거절하다","반발하다","반대","항거하다"],
-  ["밝히다","드러내다","폭로하다","공개하다","밝혀내다","발표하다","공표하다"],
-  ["숨기다","감추다","은폐하다","숨다","은닉하다","가리다","위장하다"],
-  ["이해하다","파악하다","알다","깨닫다","인식하다","납득하다","알아차리다"],
-  ["모방하다","흉내내다","따라하다","복제하다","모사하다","모방","흉내"],
-  ["변화하다","변하다","바뀌다","변화","전환하다","달라지다","변환하다"],
-  ["자극하다","촉진하다","활성화하다","고취하다","촉발하다","자극","일깨우다"],
-  ["억제하다","참다","자제하다","통제하다","억누르다","조절하다","제어하다"],
-  ["관련된","연관된","결부된","관련있는","관계된","이어진"],
-  ["직접적인","솔직한","거침없는","단도직입적인","직접","노골적인"],
-  ["간접적인","우회적인","돌려말하는","완곡한","에둘러말하는"],
-];
-
-const SYN_MAP = new Map();
-SYN_GROUPS.forEach((group, gi) => {
-  group.forEach((word) => {
-    const key = normalizeKo(word);
-    if (!SYN_MAP.has(key)) SYN_MAP.set(key, new Set());
-    SYN_MAP.get(key).add(gi);
-  });
-});
-function getSynGroups(token) { return SYN_MAP.get(normalizeKo(token)) || new Set(); }
-function sharesGroup(tokA, tokB) {
-  const ga = getSynGroups(tokA), gb = getSynGroups(tokB);
-  for (const g of ga) if (gb.has(g)) return true;
-  return false;
-}
-function tokenizeKo(str) {
-  return str
-    .replace(/<br>/g, " ")
-    .replace(/[0-9]+\./g, " ")
-    .replace(/[()（）\[\]~·\/]/g, " ")
-    .replace(/[a-zA-Z]+/g, " ")
-    .split(/[\s,;.]+/)
-    .map((t) => t.trim())
-    .filter((t) => t.length > 1);
-}
-function checkAnswer(userRaw, meaningRaw) {
-  const user = userRaw.trim();
-  if (user.length < 2) return { match: false, method: "" };
-  const meaningPlain = meaningRaw.replace(/<br>/g, " ");
-  const mTokens = tokenizeKo(meaningPlain);
-  const uTokens = tokenizeKo(user);
-  const userNorm = normalizeKo(user);
-  const userLower = user.toLowerCase();
-  if (mTokens.some((mw) => userLower.includes(mw) || mw.includes(userLower)))
-    return { match: true, method: "direct" };
-  const mNorms = mTokens.map(normalizeKo);
-  if (mNorms.some((mn) => userNorm.includes(mn) || mn.includes(userNorm)))
-    return { match: true, method: "root" };
-  for (const ut of uTokens)
-    for (const mt of mTokens)
-      if (sharesGroup(ut, mt)) return { match: true, method: "synonym" };
-  return { match: false, method: "" };
-}
+/* ── 8. 채점 엔진은 DOM-free js/grader.js에 정의 ── */
 
 /* ── 9. 인쇄 (주관식 시험지 + 정답지) ── */
 function printQuiz() {

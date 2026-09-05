@@ -1,0 +1,32 @@
+{
+  "exact": [
+    { "meaning": "명확한", "user": "명확한", "method": "exact" },
+    { "meaning": "1. 분명한<br>2. 명확한", "user": "명확한", "method": "exact" }
+  ],
+  "variants": [
+    { "meaning": "퉁명스런", "user": "퉁명스러운", "method": "variant" },
+    { "meaning": "퉁명스런", "user": "퉁명스럽게", "method": "variant" },
+    { "meaning": "완고한", "user": "완고하다", "method": "variant" },
+    { "meaning": "고집센", "user": "고집이 센", "method": "variant" },
+    { "meaning": "직설적인", "user": "직설적으로", "method": "variant" },
+  { "meaning": "근본이다", "user": "근본인", "method": "variant" },
+  { "meaning": "개선하다", "user": "개선했다", "method": "variant" },
+  { "meaning": "완화되다", "user": "완화되어", "method": "variant" },
+  { "meaning": "사랑스럽다", "user": "사랑스러워", "method": "variant" }
+  ],
+  "synonyms": [
+    { "meaning": "완강한", "user": "완고한", "method": "synonym" },
+    { "meaning": "개선하다", "user": "향상시키다", "method": "synonym" }
+  ],
+  "typos": [
+    { "meaning": "퉁명스러운", "user": "퉁명스러윤", "method": "typo" }
+  ],
+  "negatives": [
+    { "meaning": "명확한", "user": "불명확한" },
+    { "meaning": "적절한", "user": "부적절한" },
+    { "meaning": "가능한", "user": "가능하지 않은" },
+    { "meaning": "향상시키다", "user": "하다" },
+    { "meaning": "존재하는", "user": "있는" },
+    { "meaning": "훌륭한", "user": "좋은" }
+  ]
+}

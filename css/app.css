@@ -391,8 +391,10 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 .qt-reveal .rv-tag { display: inline-block; font-size: 10.5px; font-weight: 800; padding: 1px 7px; border-radius: 5px; margin-right: 5px; }
 .rv-tag.ok { background: var(--green-bg); color: var(--green); }
 .rv-tag.no { background: var(--red-bg); color: var(--red); }
+.rv-tag.variant { background: var(--surface3); color: var(--text2); }
 .rv-tag.syn { background: var(--accent-soft); color: var(--accent2); }
-.qt-reveal .rv-meaning { color: var(--accent2); font-weight: 600; }
+.rv-tag.typo { background: color-mix(in srgb, var(--yellow) 16%, transparent); color: var(--yellow); }
+.qt-reveal .rv-meaning { color: var(--accent2); font-weight: 600; overflow-wrap: anywhere; }
 .quiz-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
 
 /* ── 결과 화면 ── */
