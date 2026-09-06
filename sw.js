@@ -5,15 +5,15 @@
    - install은 HTTP 캐시를 우회(reload)해 항상 원본에서 받는다
    배포 시 CACHE_VERSION과 index.html의 자산 ?v= 를 함께 올린다. */
 
-const CACHE_VERSION = "gv-v8";
+const CACHE_VERSION = "gv-v9";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./css/app.css?v=8",
-  "./js/app.js?v=8",
-  "./js/vocab-data.js?v=8",
-  "./js/ko-grading-data.js?v=8",
-  "./js/grader.js?v=8",
+  "./css/app.css?v=9",
+  "./js/app.js?v=9",
+  "./js/vocab-data.js?v=9",
+  "./js/ko-grading-data.js?v=9",
+  "./js/grader.js?v=9",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -36,7 +36,9 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(
+        keys.filter((k) => k.startsWith("gv-") && k !== CACHE_VERSION).map((k) => caches.delete(k))
+      ))
       .then(() => self.clients.claim())
   );
 });
