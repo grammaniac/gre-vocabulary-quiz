@@ -77,7 +77,10 @@
 
   return {
     synonymGroups,
-    entryAliases: {},
+    entryAliases: {
+      "18015": ["유념하는"],
+      "18070": ["이제 막 생겨난"]
+    },
     antonymPairs: [
       ["명확한", "불명확한"],
       ["적절한", "부적절한"],

@@ -40,6 +40,18 @@ test("matches only members of the same explicit synonym group", () => {
     "separate senses of anathema must not become global synonyms");
 });
 
+test("accepts mindful without the textbook placeholder particle", () => {
+  const result = grader.checkAnswer("유념하는", "인식하는, 알고있는, ~에 유념하는", { cn: 18015 });
+  assert.equal(result.match, true);
+  assert.equal(result.method, "synonym");
+});
+
+test("accepts the reviewed temporal wording for nascent", () => {
+  const result = grader.checkAnswer("이제 막 생겨난", "지금 막 생겨난", { cn: 18070 });
+  assert.equal(result.match, true);
+  assert.equal(result.method, "synonym");
+});
+
 test("limits entry aliases to their configured C-N", () => {
   global.KO_GRADING_DATA.entryAliases["test-cn"] = ["집요한"];
   try {
