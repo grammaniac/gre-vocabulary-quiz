@@ -314,6 +314,16 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 @keyframes pulse { 50% { box-shadow: 0 0 0 10px rgba(217,119,87,0); } }
 .fc-tap-hint { position: absolute; bottom: 16px; font-size: 12px; color: var(--text3); }
 .fc-back-word { font-size: 22px; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 10px; }
+/* 뒷면 그림: 정사각, 화면 높이에 맞춰 줄어듦 */
+.fc-img {
+  display: block; flex: none; width: min(100%, 320px, 30svh); aspect-ratio: 1 / 1;
+  object-fit: cover; border-radius: 14px; margin-bottom: 14px;
+  background: var(--surface2); box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+.fc-img.wide { width: min(100%, 460px, 60svh); aspect-ratio: 2 / 1; }
+.flash-card:has(.fc-img) { min-height: clamp(470px, calc(30svh + 290px), 600px); }
+.flash-card:has(.fc-img) .fc-face.back { justify-content: safe center; padding: 58px 20px 22px; }
+.flash-card:has(.fc-img) .fc-meaning-big { margin-top: 10px; font-size: clamp(18px, 3.6vw, 23px); line-height: 1.6; }
 .fc-back-word .mini-speak { width: 30px; height: 30px; font-size: 14px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); }
 .fc-meaning-big { font-size: clamp(21px, 4vw, 27px); line-height: 1.75; margin-top: 18px; }
 .fc-meaning { font-size: 19px; font-weight: 700; color: var(--accent2); text-align: center; line-height: 1.6; margin: 10px 0 4px; }

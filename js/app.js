@@ -354,6 +354,8 @@ function renderFlash(w) {
           <div class="fc-tap-hint">카드를 탭하면 뜻이 보여요</div>
         </div>
         <div class="fc-face back">
+          <img class="fc-img${WIDE_IMG.has(w.cn) ? " wide" : ""}" src="${cardImg(w.cn)}" alt="" decoding="async"
+            onerror="this.remove()">
           <div class="fc-back-word serif">${esc(w.word)}
             <button class="mini-speak" onclick="event.stopPropagation();tts.speak('${esc(w.word).replace(/'/g, "\\'")}')">🔊</button>
           </div>
@@ -372,7 +374,16 @@ function renderFlash(w) {
       <span><span class="kbd">P</span> 발음 · <span class="kbd">S</span> ★저장</span>
     </div>`;
   if (SETTINGS.autoSpeak) setTimeout(() => tts.speak(w.word), 250);
+  // 뜻이 긴 카드는 뒷면 내용이 잘리지 않도록 카드 높이를 늘린다 (그림 크기는 CSS가 미리 확정)
+  const fc = $("flash-card"), back = fc.querySelector(".fc-face.back");
+  if (back.scrollHeight > back.clientHeight) fc.style.minHeight = back.scrollHeight + 2 + "px";
+  // 다음 카드 그림을 미리 받아 두어 뒤집을 때 바로 보이게 한다
+  const nx = session.words[session.idx + 1];
+  if (nx) { const im = new Image(); im.src = cardImg(nx.cn); }
 }
+function cardImg(cn) { return `images/cards/${cn}.webp?v=${CARD_IMG_VER}`; }
+const CARD_IMG_VER = 1;
+const WIDE_IMG = new Set([2099]); // 가로 2:1 그림(두 장면 비교)
 function flipFlash() { $("flash-card")?.classList.toggle("flipped"); }
 function flashStar(cn, btn) {
   toggleStar(cn, btn);
