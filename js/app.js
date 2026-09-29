@@ -736,6 +736,7 @@ function openModal(cn) {
   if (!w) return;
   const r = WORDS[cn];
   $("word-modal").innerHTML = `
+    <img class="md-img${WIDE_IMG.has(cn) ? " wide" : ""}" src="${cardImg(cn)}" alt="" decoding="async" onerror="this.remove()">
     <div class="md-head">
       <div style="flex:1">
         <div class="md-word serif">${esc(w.word)}</div>
