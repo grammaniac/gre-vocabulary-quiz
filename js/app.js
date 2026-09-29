@@ -442,6 +442,7 @@ function renderSpell(w) {
   const hint = w.word[0] + " " + "_ ".repeat(Math.max(0, w.word.length - 1)).trim();
   $("session-body").innerHTML = `
     <div class="spell-card">
+      <img class="spell-img${WIDE_IMG.has(w.cn) ? " wide" : ""}" src="${cardImg(w.cn)}" alt="" decoding="async" onerror="this.remove()">
       <div class="fc-label">한글 뜻</div>
       <div class="spell-meaning">${w.meaning}</div>
       <div class="spell-hint">${w.word.length}글자 · 첫 글자 <span class="kbd">${esc(w.word[0])}</span></div>
@@ -454,6 +455,8 @@ function renderSpell(w) {
     </div>`;
   setTimeout(() => $("spell-input")?.focus(), 100);
   session._spellDone = false;
+  const nx = session.words[session.idx + 1];
+  if (nx) { const im = new Image(); im.src = cardImg(nx.cn); }
 }
 function spellCheck() {
   if (session._spellDone) return;
