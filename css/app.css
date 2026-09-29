@@ -335,10 +335,10 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 /* 스펠링 문제 그림: 키보드가 올라와도 입력칸이 보이도록 작게 */
 .spell-card:has(.spell-img) { padding-top: 22px; }
 .spell-img {
-  display: block; margin: 0 auto 12px; width: min(170px, 22svh, 100%); aspect-ratio: 1 / 1;
+  display: block; margin: 0 auto 12px; width: min(230px, 29svh, 100%); aspect-ratio: 1 / 1;
   object-fit: cover; border-radius: 12px; background: var(--surface2); box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
-.spell-img.wide { width: min(300px, 44svh, 100%); aspect-ratio: 2 / 1; }
+.spell-img.wide { width: min(360px, 52svh, 100%); aspect-ratio: 2 / 1; }
 
 /* ── 객관식 ── */
 .mcq-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 22px; padding: 34px 28px; box-shadow: var(--shadow); }
