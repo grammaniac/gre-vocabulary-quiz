@@ -108,6 +108,37 @@ input, select { font-family: inherit; }
 }
 .icon-btn:hover { color: var(--text); border-color: var(--accent); }
 
+/* 수업 자료 사이트 링크 (헤더) */
+.portal-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 38px; padding: 0 14px 0 16px; border-radius: 11px;
+  background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+  color: #fff; font-size: 13px; font-weight: 700; letter-spacing: -0.2px;
+  text-decoration: none; white-space: nowrap;
+  box-shadow: 0 2px 12px var(--accent-glow);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.portal-link:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+.portal-link:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+.pl-arrow { font-size: 14px; opacity: 0.9; transition: transform 0.18s; }
+.portal-link:hover .pl-arrow { transform: translate(2px, -2px); }
+.brand { min-width: 0; }
+.logo { flex-shrink: 0; }
+
+/* 좁은 화면: 링크를 두 줄로 줄이고 브랜드 부제의 단어 수 표기는 숨김 */
+@media (max-width: 1100px) {
+  .portal-link { height: 40px; padding: 0 10px 0 12px; gap: 6px; font-size: 11.5px; line-height: 1.25; }
+  .pl-text { display: flex; flex-direction: column; }
+  .pl-arrow { font-size: 12px; }
+  .bt-extra { display: none; }
+}
+@media (max-width: 400px) {
+  .portal-link { padding: 0 8px 0 10px; gap: 4px; font-size: 11px; }
+}
+@media (max-width: 340px) {
+  .brand-text p { display: none; }
+}
+
 /* ── 레이아웃 ── */
 .view { max-width: 860px; margin: 0 auto; padding: 24px 20px 110px; }
 .panel {
@@ -545,7 +576,7 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 @media (max-width: 720px) {
   .top-nav { display: none; }
   .tab-bar { display: flex; }
-  .app-header { padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top)); }
+  .app-header { padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top)); gap: 12px; }
   .view { padding: 18px 14px 110px; }
   .panel { padding: 18px 16px; border-radius: 16px; }
   .mode-grid { grid-template-columns: repeat(2, 1fr); }

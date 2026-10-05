@@ -10,32 +10,32 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 test("loads all v9 assets in grading dependency order", () => {
   const html = read("index.html");
   const expected = [
-    "css/app.css?v=13",
-    "js/vocab-data.js?v=13",
-    "js/ko-grading-data.js?v=13",
-    "js/grader.js?v=13",
-    "js/app.js?v=13"
+    "css/app.css?v=14",
+    "js/vocab-data.js?v=14",
+    "js/ko-grading-data.js?v=14",
+    "js/grader.js?v=14",
+    "js/app.js?v=14"
   ];
   for (const asset of expected) assert.match(html, new RegExp(asset.replace("?", "\\?")));
   const scripts = expected.slice(1).map((asset) => html.indexOf(asset));
   assert.deepEqual(scripts, [...scripts].sort((a, b) => a - b));
 });
 
-test("service worker caches both grading scripts under gv-v13", () => {
+test("service worker caches both grading scripts under gv-v14", () => {
   const sw = read("sw.js");
-  assert.match(sw, /CACHE_VERSION = "gv-v13"/);
-  assert.match(sw, /"\.\/js\/ko-grading-data\.js\?v=13"/);
-  assert.match(sw, /"\.\/js\/grader\.js\?v=13"/);
+  assert.match(sw, /CACHE_VERSION = "gv-v14"/);
+  assert.match(sw, /"\.\/js\/ko-grading-data\.js\?v=14"/);
+  assert.match(sw, /"\.\/js\/grader\.js\?v=14"/);
 });
 
 test("service worker precaches the exact versioned asset request keys", () => {
   const sw = read("sw.js");
   for (const asset of [
-    "css/app.css?v=13",
-    "js/vocab-data.js?v=13",
-    "js/ko-grading-data.js?v=13",
-    "js/grader.js?v=13",
-    "js/app.js?v=13"
+    "css/app.css?v=14",
+    "js/vocab-data.js?v=14",
+    "js/ko-grading-data.js?v=14",
+    "js/grader.js?v=14",
+    "js/app.js?v=14"
   ]) {
     assert.match(sw, new RegExp(`"\\./${asset.replace("?", "\\?")}"`));
   }
