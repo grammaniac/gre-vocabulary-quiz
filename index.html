@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&display=swap">
-<link rel="stylesheet" href="css/app.css?v=13">
+<link rel="stylesheet" href="css/app.css?v=14">
 </head>
 <body>
 
@@ -43,7 +43,7 @@
       <div class="logo">거</div>
       <div class="brand-text">
         <h1>거만어 Quiz</h1>
-        <p>송종옥 GRE Verbal · 3,000 words</p>
+        <p>송종옥 GRE Verbal<span class="bt-extra"> · 3,000 words</span></p>
       </div>
     </div>
     <nav class="top-nav">
@@ -53,6 +53,10 @@
       <button class="nav-btn" data-view="stats" onclick="go('stats')">통계</button>
     </nav>
     <div class="header-actions">
+      <a class="portal-link" href="https://songverbalportal.pages.dev/" target="_blank" rel="noopener" title="송종옥 선생님 수업 자료 사이트 (새 창)">
+        <span class="pl-text"><span>송종옥 선생님</span> <span>수업 자료 사이트</span></span>
+        <span class="pl-arrow" aria-hidden="true">↗</span>
+      </a>
       <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="테마 전환">◐</button>
     </div>
   </header>
@@ -231,9 +235,9 @@
 <!-- 인쇄 전용 영역 (주관식 시험지) -->
 <div id="print-root"></div>
 
-<script src="js/vocab-data.js?v=13"></script>
-<script src="js/ko-grading-data.js?v=13"></script>
-<script src="js/grader.js?v=13"></script>
-<script src="js/app.js?v=13"></script>
+<script src="js/vocab-data.js?v=14"></script>
+<script src="js/ko-grading-data.js?v=14"></script>
+<script src="js/grader.js?v=14"></script>
+<script src="js/app.js?v=14"></script>
 </body>
 </html>
