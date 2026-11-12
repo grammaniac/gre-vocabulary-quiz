@@ -314,6 +314,9 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
   color: var(--yellow); box-shadow: 0 0 14px rgba(217, 164, 91, 0.3);
 }
 .fc-star:active { transform: scale(0.9); }
+/* 객관식·스펠링 카드의 ★ — 문제 글자와 겹치지 않게 작게, 위쪽 여백 확보 */
+.mcq-card, .spell-card { position: relative; }
+.mcq-card .fc-star, .spell-card .fc-star { top: 10px; right: 10px; width: 38px; height: 38px; font-size: 18px; }
 .flash-card {
   position: relative; width: 100%; min-height: 380px;
   transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.25, 1);
@@ -373,6 +376,7 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 
 /* ── 객관식 ── */
 .mcq-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 22px; padding: 34px 28px; box-shadow: var(--shadow); }
+.mcq-card { padding-top: 50px; }
 .mcq-q { text-align: center; margin-bottom: 26px; }
 .mcq-word { font-size: clamp(28px, 6vw, 40px); font-weight: 700; }
 .mcq-meaning-q { font-size: 21px; font-weight: 700; line-height: 1.6; }
@@ -395,6 +399,7 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 
 /* ── 스펠링 ── */
 .spell-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 22px; padding: 34px 28px; box-shadow: var(--shadow); text-align: center; }
+.spell-card { padding-top: 50px; }
 .spell-meaning { font-size: 20px; font-weight: 700; line-height: 1.65; margin-bottom: 8px; }
 .spell-hint { font-size: 14px; color: var(--text3); margin-bottom: 22px; }
 .spell-hint .kbd { font-size: 13px; }
@@ -427,6 +432,7 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 .qt-word { padding: 13px 14px; display: flex; align-items: center; gap: 8px; font-size: 16.5px; font-weight: 600; border-left: 1px solid var(--border-soft); }
 .qt-word .mini-speak { border: none; background: none; padding: 0; font-size: 13px; color: var(--text3); }
 .qt-word .mini-speak:hover { color: var(--accent2); }
+.qt-word .qt-star { margin-left: auto; padding: 6px; font-size: 18px; }
 .qt-ans { padding: 10px 14px; border-left: 1px solid var(--border-soft); display: flex; flex-direction: column; justify-content: center; gap: 5px; }
 .qt-input {
   width: 100%; padding: 9px 12px; border-radius: 10px;
@@ -460,7 +466,10 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-g
 .stat-chip .l { font-size: 11.5px; color: var(--text3); margin-top: 2px; }
 .result-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .result-wrong-list { margin-top: 24px; text-align: left; }
-.rw-title { font-size: 13px; font-weight: 700; color: var(--text3); margin-bottom: 10px; }
+.rw-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.rw-title { font-size: 13px; font-weight: 700; color: var(--text3); }
+.star-actions { margin-bottom: 4px; }
+.sa-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
 
 /* ── 단어 리스트 (단어장·오답) ── */
 .browse-head { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }

@@ -283,7 +283,7 @@ function startSession(mode, fixedPool, label) {
   const pool = fixedPool || buildPool();
   if (!pool.length) {
     toast(fixedPool ? "해당 단어가 없어요"
-      : !fixedPool && $("star-only").classList.contains("on") ? "선택한 Day에 별표 단어가 없어요. 플래시카드에서 ★를 눌러 저장해 보세요."
+      : !fixedPool && $("star-only").classList.contains("on") ? "선택한 Day에 별표 단어가 없어요. 문제 옆의 ★를 눌러 저장해 보세요."
       : "선택한 범위에 단어가 없어요. Day를 선택해 주세요.");
     return;
   }
@@ -311,6 +311,12 @@ function startWrongSession(mode) {
   const pool = shuffle(wrongPool());
   if (!pool.length) { toast("오답노트가 비어 있어요 🎉"); return; }
   startSession(mode, pool.slice(0, 50), "오답노트");
+}
+
+function startStarSession(mode) {
+  const pool = shuffle(VOCAB.filter((w) => STARS.has(w.cn)));
+  if (!pool.length) { toast("내 단어장이 비어 있어요. ★를 눌러 단어를 저장해 보세요."); return; }
+  startSession(mode, pool.slice(0, 50), "내 단어장");
 }
 
 function endSessionUI() {
@@ -343,8 +349,7 @@ function renderStep() {
 function renderFlash(w) {
   $("session-body").innerHTML = `
     <div class="flash-stage">
-      <button class="fc-star ${STARS.has(w.cn) ? "on" : ""}" id="fc-star-btn" title="내 단어장에 저장"
-        onclick="flashStar(${w.cn}, this)">★</button>
+      ${sessionStarHtml(w.cn)}
       <div class="flash-card" id="flash-card" onclick="flipFlash()">
         <div class="fc-face front">
           <div class="fc-label">영단어</div>
@@ -385,6 +390,10 @@ function cardImg(cn) { return `images/cards/${cn}.webp?v=${CARD_IMG_VER}`; }
 const CARD_IMG_VER = 1;
 const WIDE_IMG = new Set([2099]); // 가로 2:1 그림(두 장면 비교)
 function flipFlash() { $("flash-card")?.classList.toggle("flipped"); }
+function sessionStarHtml(cn) {
+  return `<button class="fc-star ${STARS.has(cn) ? "on" : ""}" id="fc-star-btn" data-star="${cn}"
+    title="내 단어장에 저장 (S)" aria-label="내 단어장에 저장" onclick="flashStar(${cn}, this)">★</button>`;
+}
 function flashStar(cn, btn) {
   toggleStar(cn, btn);
   toast(STARS.has(cn) ? "⭐ 내 단어장에 저장했어요" : "내 단어장에서 뺐어요");
@@ -408,6 +417,7 @@ function renderMcq(w) {
     : `<div class="mcq-meaning-q">${w.meaning}</div>`;
   $("session-body").innerHTML = `
     <div class="mcq-card">
+      ${sessionStarHtml(w.cn)}
       <div class="mcq-q">${qHtml}</div>
       <div class="mcq-opts">
         ${opts.map((o, i) => `
@@ -442,6 +452,7 @@ function renderSpell(w) {
   const hint = w.word[0] + " " + "_ ".repeat(Math.max(0, w.word.length - 1)).trim();
   $("session-body").innerHTML = `
     <div class="spell-card">
+      ${sessionStarHtml(w.cn)}
       <img class="spell-img${WIDE_IMG.has(w.cn) ? " wide" : ""}" src="${cardImg(w.cn)}" alt="" decoding="async" onerror="this.remove()">
       <div class="fc-label">한글 뜻</div>
       <div class="spell-meaning">${w.meaning}</div>
@@ -499,6 +510,8 @@ function renderQuizTable() {
           <div class="qt-num">${i + 1}</div>
           <div class="qt-word serif">${esc(w.word)}
             <button class="mini-speak" onclick="tts.speak('${esc(w.word).replace(/'/g, "\\'")}')" title="발음">🔊</button>
+            <button class="wr-star qt-star ${STARS.has(w.cn) ? "on" : ""}" data-star="${w.cn}" tabindex="-1"
+              title="내 단어장에 저장" aria-label="내 단어장에 저장" onclick="toggleStar(${w.cn}, this)">★</button>
           </div>
           <div class="qt-ans">
             <input class="qt-input" id="qt-${i}" placeholder="뜻 입력…" autocomplete="off"
@@ -598,10 +611,27 @@ function resultHtml(ok, n) {
       </div>
       ${wrongs.length ? `
         <div class="result-wrong-list">
-          <div class="rw-title">틀린 단어 — 오답노트에 저장됐어요</div>
+          <div class="rw-head">
+            <div class="rw-title">틀린 단어 — 오답노트에 저장됐어요</div>
+            <button class="chip" id="star-wrongs-btn" onclick="starWrongs()">${starWrongsLabel(wrongs)}</button>
+          </div>
           <div class="word-list">${wrongs.map(wordRowHtml).join("")}</div>
         </div>` : ""}
     </div>`;
+}
+function sessionWrongs() {
+  return session.results.filter((r) => !r.correct).map((r) => BY_CN.get(r.cn));
+}
+function starWrongsLabel(wrongs) {
+  return wrongs.every((w) => STARS.has(w.cn)) ? "⭐ 모두 내 단어장에 있어요" : "⭐ 모두 내 단어장에 저장";
+}
+function starWrongs() {
+  const add = sessionWrongs().filter((w) => !STARS.has(w.cn));
+  if (!add.length) { toast("이미 모두 내 단어장에 있어요"); return; }
+  add.forEach((w) => STARS.add(w.cn));
+  store.set("stars", [...STARS]);
+  add.forEach((w) => syncStarButtons(w.cn));
+  toast(`⭐ ${add.length}단어를 내 단어장에 저장했어요`);
 }
 function drawScoreRing(ok, n) {
   const c = $("score-circle");
@@ -697,7 +727,7 @@ function wordRowHtml(w) {
     : "";
   return `
     <div class="word-row" onclick="openModal(${w.cn})">
-      <button class="wr-star ${STARS.has(w.cn) ? "on" : ""}" onclick="event.stopPropagation();toggleStar(${w.cn}, this)">★</button>
+      <button class="wr-star ${STARS.has(w.cn) ? "on" : ""}" data-star="${w.cn}" onclick="event.stopPropagation();toggleStar(${w.cn}, this)">★</button>
       <div class="wr-main">
         <div class="wr-word serif">${esc(w.word)} ${w.ipa ? `<span class="wr-ipa">${esc(w.ipa)}</span>` : ""}</div>
         <div class="wr-meaning">${meaningText(w)}</div>
@@ -715,6 +745,7 @@ function drawBrowse() {
   $("browse-count").textContent = `${list.length.toLocaleString()}단어`;
   $("word-list").innerHTML = list.slice(0, browseLimit).map(wordRowHtml).join("");
   $("browse-more").style.display = list.length > browseLimit ? "" : "none";
+  updateStarActions();
 }
 function browseMore() { browseLimit += 200; drawBrowse(); }
 function openStarList() {
@@ -728,6 +759,20 @@ function toggleStar(cn, btn) {
   if (STARS.has(cn)) STARS.delete(cn); else STARS.add(cn);
   btn?.classList.toggle("on", STARS.has(cn));
   store.set("stars", [...STARS]);
+  syncStarButtons(cn);
+}
+// 화면에 같은 단어의 ★가 여러 개 있을 수 있다(문제 행·결과 목록·상세 창) — 모두 맞춘다
+function syncStarButtons(cn) {
+  const on = STARS.has(cn);
+  document.querySelectorAll(`[data-star="${cn}"]`).forEach((b) => b.classList.toggle("on", on));
+  const sw = $("star-wrongs-btn");
+  if (sw && session.active) sw.textContent = starWrongsLabel(sessionWrongs());
+  updateStarActions();
+}
+function updateStarActions() {
+  const show = $("star-filter").classList.contains("on") && STARS.size > 0;
+  $("star-actions").style.display = show ? "" : "none";
+  $("star-actions-count").textContent = STARS.size;
 }
 
 /* ── 11. 단어 상세 모달 ── */
@@ -742,7 +787,7 @@ function openModal(cn) {
         <div class="md-word serif">${esc(w.word)}</div>
         ${w.ipa ? `<div class="md-ipa">${esc(w.ipa)}</div>` : ""}
       </div>
-      <button class="wr-star ${STARS.has(cn) ? "on" : ""}" style="font-size:22px" onclick="toggleStar(${cn}, this)">★</button>
+      <button class="wr-star ${STARS.has(cn) ? "on" : ""}" data-star="${cn}" style="font-size:22px" onclick="toggleStar(${cn}, this)">★</button>
       <button class="fc-speak" style="width:44px;height:44px;margin:0;font-size:18px" onclick="tts.speak('${esc(w.word).replace(/'/g, "\\'")}', this)">🔊</button>
     </div>
     <div class="md-meaning">${w.meaning}</div>
@@ -873,15 +918,16 @@ document.addEventListener("keydown", (e) => {
   if (!session.active) return;
   const tag = document.activeElement?.tagName;
   if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+  if ((e.key === "s" || e.key === "S") && session.mode !== "quiz") {
+    const w = session.words[session.idx], btn = $("fc-star-btn");
+    if (w && btn) flashStar(w.cn, btn);
+    return;
+  }
   if (session.mode === "flash") {
     if (e.key === " ") { e.preventDefault(); flipFlash(); }
     else if (e.key === "1") flashAnswer(false);
     else if (e.key === "2") flashAnswer(true);
     else if (e.key === "p" || e.key === "P") tts.speak(session.words[session.idx]?.word || "");
-    else if (e.key === "s" || e.key === "S") {
-      const w = session.words[session.idx];
-      if (w) flashStar(w.cn, $("fc-star-btn"));
-    }
     else if (e.key === "ArrowRight") flashAnswer(true);
     else if (e.key === "ArrowLeft") flashAnswer(false);
   } else if (session.mode === "mcq" && !session._mcqDone) {
